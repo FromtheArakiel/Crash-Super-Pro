@@ -1,0 +1,41 @@
+# Crash Super Pro - a rewrite and expansion of the mod "Super-Creeper".
+# Copyright (C) 2026 FromtheArakiel
+# SPDX-License-Identifier: GPL-3.0-only
+#
+# This program is free software: you can redistribute it and/or modify it under the terms of the
+# GNU General Public License as published by the Free Software Foundation, version 3 of the License.
+# This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
+# even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+# General Public License for more details. The full text ships in LICENSE / META-INF/LICENSE.
+#
+# ---------------------------------------------------------------------------
+# Derived from the project "Super-Creeper" by First-sight (MIT licence).
+# SPDX-FileCopyrightText: First-sight
+# SPDX-License-Identifier: MIT
+# The original MIT notice is reproduced in full in the NOTICE file next to this repository.
+
+modLoader="javafml"
+loaderVersion="${loader_version_range}"
+license="${mod_license}"
+
+[[mods]]
+modId="${mod_id}"
+version="${mod_version}"
+displayName="${mod_name}"
+authors="${mod_authors}"
+credits="Rewrite and expansion of Super-Creeper by First-sight; see NOTICE."
+description='''${mod_description}'''
+
+[[dependencies.${mod_id}]]
+    modId="forge"
+    mandatory=true
+    versionRange="${forge_version_range}"
+    ordering="NONE"
+    side="BOTH"
+
+[[dependencies.${mod_id}]]
+    modId="minecraft"
+    mandatory=true
+    versionRange="${minecraft_version_range}"
+    ordering="NONE"
+    side="BOTH"

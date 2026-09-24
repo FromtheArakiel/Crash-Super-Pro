@@ -1,0 +1,84 @@
+Crash Super Pro (crashsuperpro)
+===============================
+
+This project is a rewrite and expansion of the mod "Super-Creeper", which was written by First-sight
+for Minecraft 1.20.1 (Forge). The original behaviour of that mod is preserved one to one, the code
+has been re-organised into reusable pieces, and new monster mechanics were added on top of it.
+
+    This project:      Crash Super Pro (mod id: crashsuperpro)
+    Author:            FromtheArakiel
+    Original project:  Super-Creeper
+    Original author:   First-sight
+    Original licence:  MIT
+
+Copyright
+---------
+
+Copyright (C) 2026 FromtheArakiel - the rewritten structure, the reusable building blocks and every
+mechanic that was added on top of the original mod.
+
+Copyright of the code taken from Super-Creeper stays with First-sight. Their notice is kept
+alongside ours at the top of every source file in the form
+
+    SPDX-FileCopyrightText: First-sight
+    SPDX-License-Identifier: MIT
+
+The original parts stay under the MIT licence reproduced in full below, the project as a whole is
+distributed under the GNU General Public License v3.0 (see LICENSE). The two licences are
+compatible: MIT is permissive, so the combined work may be distributed under the GPL.
+
+--------------------------------------------------------------------------
+
+MIT License
+
+Copyright (c) 2026 First-sight
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+--------------------------------------------------------------------------
+
+What the rewrite changed
+------------------------
+
+The original behaviour is untouched: a creeper that is about to explode refuses to die, a creeper
+that is hurt by another creeper swells up and remembers it with a "Boom" flag, creepers walk to the
+nearest free spider and ride it, creepers open doors while hunting, and creepers search nearby
+block entities and blow them up. Those goals and the hurt hook were kept, but the code moved:
+
+* the creeper hurt handling lives in event/CreeperCombatHandler,
+* the "ride the nearest spider" goal became a reusable ai/goal/MountNearestEntityGoal,
+* the "walk to an explodable block entity" goal became ai/goal/SeekExplodableBlockGoal with a
+  pluggable swell controller, and its block lookup is shared through util/TargetFinder,
+* the mixins only add the goals and keep the Boom/fire swell handling.
+
+Added on top of that: chain detonation for creepers, a split tag that spawning creepers roll for and
+that makes a tagged creeper spawn two already igniting creepers when it dies, naturally spawned
+phantoms that may carry a mounted wither
+skeleton, skeleton, pillager or evoker, arrows of the phantom riding wither skeleton that apply
+wither, blindness and fire, arrows of the phantom riding skeleton that apply Instant Damage,
+phantom bombardment with TNT or fireballs, and vindicators that spawn riding a chicken. Everything
+is configurable - the new mechanics as well as the numbers the original mod had hard coded.
+
+Port history
+------------
+
+1.4.0 fixes a server crash that happened when a creeper with the split tag detonated: the chain
+detonation and the split children were triggered directly from inside the explosion start event, so
+the explosion code ran re-entrantly. Those follow ups are now queued to the end of the server tick,
+the block-entity swell value is clamped, and the phantom bombardment gained its two stage AI.

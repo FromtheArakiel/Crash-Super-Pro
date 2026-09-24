@@ -1,0 +1,15 @@
+{
+  "required": false,
+  "minVersion": "0.8.5",
+  "package": "dev.arakiel.crashsuperpro.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "refmap": "crashsuperpro.refmap.json",
+  "injectors": {
+    "defaultRequire": 1
+  },
+  "mixins": [
+    "CreeperInvoker",
+    "CreeperMixin",
+    "PhantomMixin"
+  ]
+}
