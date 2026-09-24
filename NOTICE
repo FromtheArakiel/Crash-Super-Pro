@@ -82,3 +82,20 @@ Port history
 detonation and the split children were triggered directly from inside the explosion start event, so
 the explosion code ran re-entrantly. Those follow ups are now queued to the end of the server tick,
 the block-entity swell value is clamped, and the phantom bombardment gained its two stage AI.
+
+1.5.0 adds the potion phantom with its own AI, the explosive and lava arrow tags for skeletons, the
+cat reaction of creepers and the looting behaviour of endermen. Every event handler now catches its
+own failures and reports them without going through log4j, because a broken log4j configuration used
+to replace the real exception with a LinkageError during crash reporting.
+
+1.6.0 fixes what the first pass got wrong: the potion phantom throws its volley at the player instead
+of straight down, watches a 16 block radius, keeps enough distance so its own splash potions cannot
+hit it, and is explicitly exclusive with the TNT and fireball payloads. The enderman now turns the
+block it carries into dirt instead of filling the hole back in. The explosive and lava arrow effects
+run at the end of the tick so they can no longer re-enter the explosion code, and the valuable block
+search is throttled because it scans nine chunks at once.
+
+1.7.0 makes chain detonation the highest priority of a detonating creeper - the original blast is
+cancelled so a creeper can never go off a second time - adds self damage immunity for everything the
+mod causes, makes the potion phantom chase at a low 3 to 7 block altitude, and turned every remaining
+hard coded number into a config option.

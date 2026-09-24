@@ -24,7 +24,8 @@ package dev.arakiel.crashsuperpro.event;
 
 import dev.arakiel.crashsuperpro.config.CrashSuperProConfig;
 import dev.arakiel.crashsuperpro.mixin.CreeperInvoker;
-import dev.arakiel.crashsuperpro.util.DeferredActions;
+import dev.arakiel.crashsuperpro.platform.DeferredActions;
+import dev.arakiel.crashsuperpro.platform.SafeLog;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.monster.Creeper;
 import net.minecraft.world.level.Level;
@@ -48,6 +49,14 @@ public final class CreeperSplitHandler {
     /** Killed by a player or another mob. */
     @SubscribeEvent
     public static void onLivingDeath(LivingDeathEvent event) {
+        try {
+            handleLivingDeath(event);
+        } catch (RuntimeException exception) {
+            SafeLog.error("Failed to handle a splitting creeper death.", exception);
+        }
+    }
+
+    private static void handleLivingDeath(LivingDeathEvent event) {
         if (event.getEntity() instanceof Creeper creeper) {
             Level level = creeper.level();
             double x = creeper.getX();
@@ -64,6 +73,14 @@ public final class CreeperSplitHandler {
      */
     @SubscribeEvent
     public static void onExplosionStart(ExplosionEvent.Start event) {
+        try {
+            handleExplosionStart(event);
+        } catch (RuntimeException exception) {
+            SafeLog.error("Failed to handle a splitting creeper explosion.", exception);
+        }
+    }
+
+    private static void handleExplosionStart(ExplosionEvent.Start event) {
         if (!event.getLevel().isClientSide() && event.getExplosion().getExploder() instanceof Creeper creeper) {
             double x = creeper.getX();
             double y = creeper.getY();

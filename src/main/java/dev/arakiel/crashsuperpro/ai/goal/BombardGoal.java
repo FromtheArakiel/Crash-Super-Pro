@@ -25,9 +25,9 @@ package dev.arakiel.crashsuperpro.ai.goal;
 import java.util.EnumSet;
 
 import dev.arakiel.crashsuperpro.config.CrashSuperProConfig;
-import dev.arakiel.crashsuperpro.util.BombTags;
-import dev.arakiel.crashsuperpro.util.Bombardier;
-import dev.arakiel.crashsuperpro.util.TargetFinder;
+import dev.arakiel.crashsuperpro.tags.BombTags;
+import dev.arakiel.crashsuperpro.world.Bombardier;
+import dev.arakiel.crashsuperpro.world.TargetFinder;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.goal.Goal;

@@ -8,8 +8,12 @@
     "defaultRequire": 1
   },
   "mixins": [
+    "AbstractArrowMixin",
+    "AvoidEntityGoalAccessor",
     "CreeperInvoker",
     "CreeperMixin",
-    "PhantomMixin"
+    "EndermanMixin",
+    "PhantomMixin",
+    "AbstractSkeletonMixin"
   ]
 }

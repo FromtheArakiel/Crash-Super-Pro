@@ -23,8 +23,9 @@
 package dev.arakiel.crashsuperpro.event;
 
 import dev.arakiel.crashsuperpro.config.CrashSuperProConfig;
-import dev.arakiel.crashsuperpro.util.BombTags;
-import dev.arakiel.crashsuperpro.util.RiderTags;
+import dev.arakiel.crashsuperpro.tags.BombTags;
+import dev.arakiel.crashsuperpro.tags.RiderTags;
+import dev.arakiel.crashsuperpro.platform.SafeLog;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.Mob;
@@ -35,6 +36,7 @@ import net.minecraft.world.entity.monster.Creeper;
 import net.minecraft.world.entity.monster.Evoker;
 import net.minecraft.world.entity.monster.Phantom;
 import net.minecraft.world.entity.monster.Pillager;
+import net.minecraft.world.entity.monster.Skeleton;
 import net.minecraft.world.entity.monster.Vindicator;
 import net.minecraft.world.entity.monster.WitherSkeleton;
 import net.minecraft.world.item.ItemStack;
@@ -51,6 +53,14 @@ public final class MobSpawnHandler {
 
     @SubscribeEvent
     public static void onFinalizeSpawn(MobSpawnEvent.FinalizeSpawn event) {
+        try {
+            handleFinalizeSpawn(event);
+        } catch (RuntimeException exception) {
+            SafeLog.error("Failed to handle a mob spawn event.", exception);
+        }
+    }
+
+    private static void handleFinalizeSpawn(MobSpawnEvent.FinalizeSpawn event) {
         Mob mob = event.getEntity();
         if (mob.level().isClientSide()) {
             return;
@@ -63,6 +73,8 @@ public final class MobSpawnHandler {
             handlePhantom(event, phantom);
         } else if (mob instanceof Creeper creeper) {
             handleCreeper(event, creeper);
+        } else if (mob instanceof Skeleton skeleton) {
+            handleSkeleton(event, skeleton);
         } else if (mob instanceof Vindicator vindicator) {
             handleVindicator(event, vindicator);
         }
@@ -74,7 +86,8 @@ public final class MobSpawnHandler {
      */
     private static void handlePhantom(MobSpawnEvent.FinalizeSpawn event, Phantom phantom) {
         BombTags.roll(phantom, CrashSuperProConfig.phantomTntTagChance(),
-                CrashSuperProConfig.phantomFireballTagChance());
+                CrashSuperProConfig.phantomFireballTagChance(),
+                CrashSuperProConfig.potionPhantomTagChance());
 
         double roll = phantom.level().random.nextDouble();
         EntityType<? extends Mob> riderType = pickRiderType(roll);
@@ -91,10 +104,17 @@ public final class MobSpawnHandler {
         rider.moveTo(phantom.getX(), phantom.getY(), phantom.getZ(), phantom.getYRot(), 0.0F);
         rider.finalizeSpawn(event.getLevel(), event.getDifficulty(), MobSpawnType.JOCKEY, null, null);
 
+        boolean riderTag = true;
         if (rider instanceof AbstractSkeleton skeletonRider) {
             if (rider instanceof WitherSkeleton) {
                 skeletonRider.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(Items.BOW));
                 skeletonRider.setDropChance(EquipmentSlot.MAINHAND, 0.0F);
+            } else if (rider instanceof Skeleton plainSkeleton) {
+                // A special arrow skeleton keeps its own tag instead of the rider tag, the two are
+                // mutually exclusive.
+                riderTag = !rollSkeletonArrowTag(plainSkeleton,
+                        CrashSuperProConfig.explosiveSkeletonRiderChance(),
+                        CrashSuperProConfig.lavaSkeletonRiderChance());
             }
             // Makes the skeleton swap its melee goal for the bow goal when it carries a bow.
             skeletonRider.reassessWeaponGoal();
@@ -103,9 +123,36 @@ public final class MobSpawnHandler {
         if (CrashSuperProConfig.phantomRiderPersistenceRequired()) {
             rider.setPersistenceRequired();
         }
-        RiderTags.markPhantomRider(rider);
+        if (riderTag) {
+            RiderTags.markPhantomRider(rider);
+        }
         phantom.level().addFreshEntity(rider);
         rider.startRiding(phantom, true);
+    }
+
+    /** Naturally spawned skeletons may get one of the two special arrow tags. */
+    private static void handleSkeleton(MobSpawnEvent.FinalizeSpawn event, Skeleton skeleton) {
+        if (event.getSpawnType() != MobSpawnType.NATURAL) {
+            return;
+        }
+
+        rollSkeletonArrowTag(skeleton, CrashSuperProConfig.explosiveSkeletonSpawnChance(),
+                CrashSuperProConfig.lavaSkeletonSpawnChance());
+    }
+
+    /** Gives the skeleton one of the two exclusive arrow tags and reports whether one was applied. */
+    private static boolean rollSkeletonArrowTag(Skeleton skeleton, double explosiveChance, double lavaChance) {
+        if (CrashSuperProConfig.explosiveSkeletonEnabled() && explosiveChance > 0.0D
+                && skeleton.level().random.nextDouble() < explosiveChance) {
+            skeleton.addTag(CrashSuperProConfig.explosiveSkeletonTag());
+            return true;
+        }
+        if (CrashSuperProConfig.lavaSkeletonEnabled() && lavaChance > 0.0D
+                && skeleton.level().random.nextDouble() < lavaChance) {
+            skeleton.addTag(CrashSuperProConfig.lavaSkeletonTag());
+            return true;
+        }
+        return false;
     }
 
     /**

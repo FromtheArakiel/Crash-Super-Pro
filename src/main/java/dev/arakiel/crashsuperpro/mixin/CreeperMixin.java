@@ -22,27 +22,49 @@
 
 package dev.arakiel.crashsuperpro.mixin;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+import dev.arakiel.crashsuperpro.api.PoweredCreeper;
+import dev.arakiel.crashsuperpro.ai.goal.CatChargeGoal;
 import dev.arakiel.crashsuperpro.ai.goal.MountNearestEntityGoal;
 import dev.arakiel.crashsuperpro.ai.goal.SeekExplodableBlockGoal;
 import dev.arakiel.crashsuperpro.config.CrashSuperProConfig;
-import dev.arakiel.crashsuperpro.util.SwellController;
+import dev.arakiel.crashsuperpro.ai.goal.SwellController;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.goal.OpenDoorGoal;
+import net.minecraft.world.entity.ai.goal.AvoidEntityGoal;
+import net.minecraft.world.entity.ai.goal.Goal;
+import net.minecraft.world.entity.ai.goal.WrappedGoal;
+import net.minecraft.world.entity.animal.Cat;
+import net.minecraft.world.entity.animal.Ocelot;
 import net.minecraft.world.entity.monster.Creeper;
 import net.minecraft.world.entity.monster.Spider;
 import net.minecraft.world.level.Level;
+import net.minecraft.network.syncher.EntityDataAccessor;
 
 /** Adds the same three goals the original mod added, now built from the reusable pieces. */
 @Mixin(Creeper.class)
-public abstract class CreeperMixin extends Mob {
+public abstract class CreeperMixin extends Mob implements PoweredCreeper {
+    @Shadow
+    @Final
+    private static EntityDataAccessor<Boolean> DATA_IS_POWERED;
+
     protected CreeperMixin(EntityType<? extends Mob> entityType, Level level) {
         super(entityType, level);
+    }
+
+    @Override
+    public void crashsuperpro$setPowered(boolean powered) {
+        ((Creeper) (Object) this).getEntityData().set(DATA_IS_POWERED, powered);
     }
 
     @Inject(method = "registerGoals", at = @At("HEAD"))
@@ -57,6 +79,23 @@ public abstract class CreeperMixin extends Mob {
         this.goalSelector.addGoal(2, new SeekExplodableBlockGoal(creeper, CrashSuperProConfig.creeperSeekRadius(),
                 CrashSuperProConfig.creeperSeekSpeed(), CrashSuperProConfig.creeperSeekMaxResistance(),
                 SwellController.creeper()));
+        this.goalSelector.addGoal(2, new CatChargeGoal(creeper));
+    }
+
+    /** The vanilla cat and ocelot flee goals are dropped, the cat reaction goal replaces them. */
+    @Inject(method = "registerGoals", at = @At("RETURN"))
+    private void crashsuperpro$removeCatFleeGoals(CallbackInfo ci) {
+        List<Goal> toRemove = new ArrayList<>();
+        for (WrappedGoal wrapped : this.goalSelector.getAvailableGoals()) {
+            Goal goal = wrapped.getGoal();
+            if (goal instanceof AvoidEntityGoal<?> avoid) {
+                Class<?> avoided = ((AvoidEntityGoalAccessor) avoid).getAvoidedClass();
+                if (avoided == Cat.class || avoided == Ocelot.class) {
+                    toRemove.add(goal);
+                }
+            }
+        }
+        toRemove.forEach(this.goalSelector::removeGoal);
     }
 
     @Inject(method = "tick", at = @At("HEAD"))

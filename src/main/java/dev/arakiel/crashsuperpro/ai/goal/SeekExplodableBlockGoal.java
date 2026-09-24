@@ -25,8 +25,9 @@ package dev.arakiel.crashsuperpro.ai.goal;
 import java.util.EnumSet;
 import java.util.Objects;
 
-import dev.arakiel.crashsuperpro.util.SwellController;
-import dev.arakiel.crashsuperpro.util.TargetFinder;
+import dev.arakiel.crashsuperpro.config.CrashSuperProConfig;
+import dev.arakiel.crashsuperpro.ai.goal.SwellController;
+import dev.arakiel.crashsuperpro.world.TargetFinder;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.goal.Goal;
@@ -37,9 +38,7 @@ import net.minecraft.world.entity.ai.goal.Goal;
  * goal can be handed to monsters that do not swell up.
  */
 public class SeekExplodableBlockGoal extends Goal {
-    /** The original mod divided by the squared distance; right on top of the target that overflows. */
     private static final double MIN_DISTANCE_SQR = 0.01D;
-    private static final int MAX_SWELL_DIRECTION = 30;
 
     private final Mob hunter;
     private final int radius;
@@ -99,9 +98,8 @@ public class SeekExplodableBlockGoal extends Goal {
                     this.targetPos.getX(),
                     this.targetPos.getY(),
                     this.targetPos.getZ());
-            int swell = distance <= MIN_DISTANCE_SQR
-                    ? MAX_SWELL_DIRECTION
-                    : (int) Math.min(MAX_SWELL_DIRECTION, 10.0D / distance);
+            int max = CrashSuperProConfig.creeperSeekSwellMax();
+            int swell = distance <= MIN_DISTANCE_SQR ? max : (int) Math.min(max, 10.0D / distance);
             this.swellController.swell(this.hunter, swell);
         }
     }

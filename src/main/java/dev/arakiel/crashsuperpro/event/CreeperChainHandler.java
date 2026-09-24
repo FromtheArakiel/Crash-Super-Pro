@@ -24,11 +24,18 @@ package dev.arakiel.crashsuperpro.event;
 
 import dev.arakiel.crashsuperpro.config.CrashSuperProConfig;
 import dev.arakiel.crashsuperpro.mixin.CreeperInvoker;
-import dev.arakiel.crashsuperpro.util.DeferredActions;
+import dev.arakiel.crashsuperpro.platform.DeferredActions;
+import dev.arakiel.crashsuperpro.platform.DamageImmunity;
+import dev.arakiel.crashsuperpro.platform.SafeLog;
+import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.UUID;
 import net.minecraft.world.entity.monster.Creeper;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.minecraftforge.event.level.ExplosionEvent;
+import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 
 /**
@@ -36,11 +43,29 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
  * away, which turns a group of creepers into a chain reaction.
  */
 public final class CreeperChainHandler {
+    /** Creepers this tick already pushed into a chain detonation. */
+    private static final Set<UUID> TRIGGERED = new HashSet<>();
+
     private CreeperChainHandler() {
     }
 
     @SubscribeEvent
+    public static void onServerTick(TickEvent.ServerTickEvent event) {
+        if (event.phase == TickEvent.Phase.END && !TRIGGERED.isEmpty()) {
+            TRIGGERED.clear();
+        }
+    }
+
+    @SubscribeEvent
     public static void onExplosionStart(ExplosionEvent.Start event) {
+        try {
+            handleExplosionStart(event);
+        } catch (RuntimeException exception) {
+            SafeLog.error("Failed to chain a creeper explosion.", exception);
+        }
+    }
+
+    private static void handleExplosionStart(ExplosionEvent.Start event) {
         if (!CrashSuperProConfig.chainExplosionEnabled()) {
             return;
         }
@@ -51,12 +76,19 @@ public final class CreeperChainHandler {
         }
 
         AABB area = source.getBoundingBox().inflate(CrashSuperProConfig.chainExplosionRadius());
-        for (Creeper other : level.getEntitiesOfClass(Creeper.class, area,
-                creeper -> creeper != source && creeper.isAlive())) {
+        List<Creeper> others = level.getEntitiesOfClass(Creeper.class, area,
+                creeper -> creeper != source && creeper.isAlive());
+        for (Creeper other : others) {
+            // Its own blast still goes off, it is only the follow up detonations that are deduplicated
+            // so the same creeper can never be blown up twice in one tick.
+            if (!TRIGGERED.add(other.getUUID())) {
+                continue;
+            }
             // Detonating right here would re-enter the explosion code from inside its own event, so
             // the follow up detonation runs at the end of the tick instead.
             DeferredActions.enqueue(() -> {
                 if (other.isAlive() && !other.isRemoved()) {
+                    DamageImmunity.protect(other);
                     // The invoker mixin opens the private detonation for exactly this.
                     ((CreeperInvoker) other).invokeExplodeCreeper();
                 }

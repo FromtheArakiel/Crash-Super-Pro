@@ -26,10 +26,13 @@ import dev.arakiel.crashsuperpro.config.CrashSuperProConfig;
 import dev.arakiel.crashsuperpro.event.CreeperChainHandler;
 import dev.arakiel.crashsuperpro.event.CreeperCombatHandler;
 import dev.arakiel.crashsuperpro.event.CreeperSplitHandler;
+import dev.arakiel.crashsuperpro.event.ExplosiveArrowHandler;
 import dev.arakiel.crashsuperpro.event.MobSpawnHandler;
 import dev.arakiel.crashsuperpro.event.SkeletonArrowHandler;
 import dev.arakiel.crashsuperpro.event.WitherArrowHandler;
-import dev.arakiel.crashsuperpro.util.DeferredActions;
+import dev.arakiel.crashsuperpro.platform.DeferredActions;
+import dev.arakiel.crashsuperpro.ai.goal.EndermanTheftTracker;
+import dev.arakiel.crashsuperpro.platform.DamageImmunity;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.ModLoadingContext;
@@ -52,6 +55,9 @@ public final class CrashSuperPro {
         MinecraftForge.EVENT_BUS.register(SkeletonArrowHandler.class);
         MinecraftForge.EVENT_BUS.register(WitherArrowHandler.class);
         MinecraftForge.EVENT_BUS.register(DeferredActions.class);
+        MinecraftForge.EVENT_BUS.register(EndermanTheftTracker.class);
+        MinecraftForge.EVENT_BUS.register(ExplosiveArrowHandler.class);
+        MinecraftForge.EVENT_BUS.register(DamageImmunity.class);
     }
 
     public static ResourceLocation id(String path) {

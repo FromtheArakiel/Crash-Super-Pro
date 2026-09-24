@@ -20,7 +20,7 @@
  * The original MIT notice is reproduced in full in the NOTICE file next to this repository.
  */
 
-package dev.arakiel.crashsuperpro.util;
+package dev.arakiel.crashsuperpro.tags;
 
 import dev.arakiel.crashsuperpro.config.CrashSuperProConfig;
 import net.minecraft.world.entity.Entity;
@@ -45,18 +45,39 @@ public final class BombTags {
         return has(entity, CrashSuperProConfig.phantomFireballTag());
     }
 
-    public static boolean isBomber(Entity entity) {
+    public static boolean hasPotion(Entity entity) {
+        return has(entity, CrashSuperProConfig.potionPhantomTag());
+    }
+
+    public static boolean hasExplosiveArrows(Entity entity) {
+        return has(entity, CrashSuperProConfig.explosiveSkeletonTag());
+    }
+
+    public static boolean hasLavaArrows(Entity entity) {
+        return has(entity, CrashSuperProConfig.lavaSkeletonTag());
+    }
+
+    /** The payloads the two stage bombardment handles. */
+    public static boolean hasExplosivePayload(Entity entity) {
         return hasTnt(entity) || hasFireball(entity);
     }
 
-    /** Rolls the two exclusive payload tags for a freshly spawned entity. */
-    public static void roll(Entity entity, double tntChance, double fireballChance) {
+    public static boolean isBomber(Entity entity) {
+        return hasExplosivePayload(entity) || hasPotion(entity);
+    }
+
+    /** Rolls the three exclusive payload tags for a freshly spawned entity. */
+    public static void roll(Entity entity, double tntChance, double fireballChance, double potionChance) {
         if (tntChance > 0.0D && entity.level().random.nextDouble() < tntChance) {
             entity.addTag(CrashSuperProConfig.phantomTntTag());
             return;
         }
         if (fireballChance > 0.0D && entity.level().random.nextDouble() < fireballChance) {
             entity.addTag(CrashSuperProConfig.phantomFireballTag());
+            return;
+        }
+        if (potionChance > 0.0D && entity.level().random.nextDouble() < potionChance) {
+            entity.addTag(CrashSuperProConfig.potionPhantomTag());
         }
     }
 }

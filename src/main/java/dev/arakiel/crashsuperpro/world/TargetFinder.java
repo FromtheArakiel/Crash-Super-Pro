@@ -20,7 +20,7 @@
  * The original MIT notice is reproduced in full in the NOTICE file next to this repository.
  */
 
-package dev.arakiel.crashsuperpro.util;
+package dev.arakiel.crashsuperpro.world;
 
 import java.util.List;
 
@@ -130,5 +130,24 @@ public final class TargetFinder {
         int dz = random.nextInt(radius * 2 + 1) - radius;
         BlockPos horizontal = origin.offset(dx, 0, dz);
         return hunter.level().getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, horizontal);
+    }
+
+    /** The closest player that is neither creative nor a spectator, the potion phantom only hunts those. */
+    public static Player findNearestPlayer(Mob hunter, double range) {
+        List<Player> players = hunter.level().getEntitiesOfClass(Player.class,
+                hunter.getBoundingBox().inflate(range),
+                player -> player.isAlive() && !player.isRemoved()
+                        && !player.isCreative() && !player.isSpectator());
+
+        Player nearest = null;
+        double nearestDistance = Double.MAX_VALUE;
+        for (Player player : players) {
+            double distance = hunter.distanceToSqr(player);
+            if (distance < nearestDistance) {
+                nearestDistance = distance;
+                nearest = player;
+            }
+        }
+        return nearest;
     }
 }

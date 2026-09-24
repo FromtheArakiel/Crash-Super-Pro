@@ -23,7 +23,8 @@
 package dev.arakiel.crashsuperpro.event;
 
 import dev.arakiel.crashsuperpro.config.CrashSuperProConfig;
-import dev.arakiel.crashsuperpro.util.RiderTags;
+import dev.arakiel.crashsuperpro.tags.RiderTags;
+import dev.arakiel.crashsuperpro.platform.SafeLog;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.LivingEntity;
@@ -46,6 +47,14 @@ public final class WitherArrowHandler {
 
     @SubscribeEvent
     public static void onProjectileImpact(ProjectileImpactEvent event) {
+        try {
+            handleProjectileImpact(event);
+        } catch (RuntimeException exception) {
+            SafeLog.error("Failed to apply the wither skeleton arrow effects.", exception);
+        }
+    }
+
+    private static void handleProjectileImpact(ProjectileImpactEvent event) {
         if (!CrashSuperProConfig.witherArrowsEnabled()) {
             return;
         }

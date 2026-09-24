@@ -22,6 +22,7 @@
 
 package dev.arakiel.crashsuperpro.event;
 
+import dev.arakiel.crashsuperpro.platform.SafeLog;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.entity.LivingEntity;
@@ -40,6 +41,14 @@ public final class CreeperCombatHandler {
 
     @SubscribeEvent
     public static void onLivingHurt(LivingHurtEvent event) {
+        try {
+            handleHurt(event);
+        } catch (RuntimeException exception) {
+            SafeLog.error("Failed to handle a creeper hurt event.", exception);
+        }
+    }
+
+    private static void handleHurt(LivingHurtEvent event) {
         LivingEntity livingEntity = event.getEntity();
         double damage = event.getAmount();
         DamageSource damageSource = event.getSource();

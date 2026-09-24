@@ -20,24 +20,34 @@
  * The original MIT notice is reproduced in full in the NOTICE file next to this repository.
  */
 
-package dev.arakiel.crashsuperpro.util;
+package dev.arakiel.crashsuperpro.platform;
 
-import dev.arakiel.crashsuperpro.config.CrashSuperProConfig;
-import net.minecraft.world.entity.Entity;
+import java.io.PrintStream;
 
 /**
- * Marks the monsters that were spawned as a phantom rider. The arrow effects look for this tag, so
- * only our riders get them - an ordinary skeleton or wither skeleton is left alone.
+ * Writes diagnostics without touching log4j.
+ *
+ * <p>Forge reports an exception thrown by an event handler through its own logger. When the log4j
+ * setup of the instance is broken that logging call fails with a {@code LinkageError} and the game
+ * dies with the real exception hidden. Every handler in this mod catches its own failures and reports
+ * them here, so a broken log4j can never turn a handled problem into a crash again.
  */
-public final class RiderTags {
-    private RiderTags() {
+public final class SafeLog {
+    private static final String PREFIX = "[CrashSuperPro] ";
+
+    private SafeLog() {
     }
 
-    public static void markPhantomRider(Entity rider) {
-        rider.addTag(CrashSuperProConfig.phantomRiderTag());
-    }
-
-    public static boolean isPhantomRider(Entity entity) {
-        return entity.getTags().contains(CrashSuperProConfig.phantomRiderTag());
+    public static void error(String message, Throwable throwable) {
+        PrintStream stream = System.err;
+        try {
+            stream.println(PREFIX + message);
+            if (throwable != null) {
+                stream.println(PREFIX + throwable);
+                throwable.printStackTrace(stream);
+            }
+        } catch (Throwable ignored) {
+            // Reporting must never be the thing that breaks the game.
+        }
     }
 }

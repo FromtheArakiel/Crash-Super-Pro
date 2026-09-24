@@ -95,6 +95,66 @@ public final class CrashSuperProConfig {
     private static final ForgeConfigSpec.DoubleValue VINDICATOR_CHICKEN_CHANCE;
     private static final ForgeConfigSpec.BooleanValue VINDICATOR_NATURAL_ONLY;
 
+    // creeper cat reaction
+    private static final ForgeConfigSpec.BooleanValue CREEPER_CAT_CHARGE_ENABLED;
+    private static final ForgeConfigSpec.DoubleValue CREEPER_CAT_CHARGE_RADIUS;
+
+    // potion phantom
+    private static final ForgeConfigSpec.BooleanValue POTION_PHANTOM_ENABLED;
+    private static final ForgeConfigSpec.ConfigValue<String> POTION_PHANTOM_TAG;
+    private static final ForgeConfigSpec.DoubleValue POTION_PHANTOM_TAG_CHANCE;
+    private static final ForgeConfigSpec.IntValue POTION_PHANTOM_BOTTLE_COUNT;
+    private static final ForgeConfigSpec.IntValue POTION_PHANTOM_COOLDOWN;
+    private static final ForgeConfigSpec.DoubleValue POTION_PHANTOM_HUNT_RANGE;
+    private static final ForgeConfigSpec.IntValue POTION_PHANTOM_IDLE_TICKS;
+    private static final ForgeConfigSpec.DoubleValue POTION_PHANTOM_EXPLOSION_POWER;
+    private static final ForgeConfigSpec.IntValue POTION_PHANTOM_TARGET_RADIUS;
+
+    // explosive / lava skeleton arrows
+    private static final ForgeConfigSpec.BooleanValue EXPLOSIVE_SKELETON_ENABLED;
+    private static final ForgeConfigSpec.ConfigValue<String> EXPLOSIVE_SKELETON_TAG;
+    private static final ForgeConfigSpec.DoubleValue EXPLOSIVE_SKELETON_SPAWN_CHANCE;
+    private static final ForgeConfigSpec.DoubleValue EXPLOSIVE_SKELETON_RIDER_CHANCE;
+    private static final ForgeConfigSpec.DoubleValue EXPLOSIVE_SKELETON_POWER;
+    private static final ForgeConfigSpec.BooleanValue LAVA_SKELETON_ENABLED;
+    private static final ForgeConfigSpec.ConfigValue<String> LAVA_SKELETON_TAG;
+    private static final ForgeConfigSpec.DoubleValue LAVA_SKELETON_SPAWN_CHANCE;
+    private static final ForgeConfigSpec.DoubleValue LAVA_SKELETON_RIDER_CHANCE;
+    private static final ForgeConfigSpec.IntValue LAVA_SKELETON_RADIUS;
+
+    // enderman theft
+    private static final ForgeConfigSpec.BooleanValue ENDERMAN_THEFT_ENABLED;
+    private static final ForgeConfigSpec.IntValue ENDERMAN_THEFT_RADIUS;
+    private static final ForgeConfigSpec.IntValue ENDERMAN_THEFT_DELAY;
+    private static final ForgeConfigSpec.DoubleValue ENDERMAN_THEFT_MAX_RESISTANCE;
+
+    // remaining tuning values so nothing is hard coded any more
+    private static final ForgeConfigSpec.BooleanValue NO_SELF_DAMAGE;
+    private static final ForgeConfigSpec.DoubleValue POTION_PHANTOM_HUNT_HEIGHT;
+    private static final ForgeConfigSpec.DoubleValue POTION_PHANTOM_THROW_SPEED;
+    private static final ForgeConfigSpec.DoubleValue POTION_PHANTOM_THROW_SPREAD;
+    private static final ForgeConfigSpec.DoubleValue POTION_PHANTOM_CHASE_SPEED;
+    private static final ForgeConfigSpec.DoubleValue POTION_PHANTOM_CHARGE_SPEED;
+    private static final ForgeConfigSpec.DoubleValue POTION_PHANTOM_CHARGE_DISTANCE;
+    private static final ForgeConfigSpec.IntValue POTION_PHANTOM_SEARCH_INTERVAL;
+    private static final ForgeConfigSpec.DoubleValue ENDERMAN_THEFT_REACH;
+    private static final ForgeConfigSpec.DoubleValue ENDERMAN_THEFT_SPEED;
+    private static final ForgeConfigSpec.IntValue ENDERMAN_THEFT_SEARCH_INTERVAL;
+    private static final ForgeConfigSpec.IntValue ENDERMAN_THEFT_PARTICLES;
+    private static final ForgeConfigSpec.IntValue CREEPER_MOUNT_RECALC_INTERVAL;
+    private static final ForgeConfigSpec.DoubleValue CREEPER_MOUNT_FOLLOW_DISTANCE;
+    private static final ForgeConfigSpec.IntValue CREEPER_SEEK_SWELL_MAX;
+    private static final ForgeConfigSpec.IntValue CREEPER_CAT_CHECK_INTERVAL;
+    private static final ForgeConfigSpec.IntValue ARROW_TRAIL_PARTICLES;
+    private static final ForgeConfigSpec.IntValue ARROW_IMPACT_PARTICLES;
+
+    private static final ForgeConfigSpec.DoubleValue SPECIAL_SKELETON_TARGET_RANGE;
+    private static final ForgeConfigSpec.IntValue SPECIAL_SKELETON_CHECK_INTERVAL;
+    private static final ForgeConfigSpec.IntValue SPECIAL_SKELETON_BLOCK_RADIUS;
+    private static final ForgeConfigSpec.IntValue SPECIAL_SKELETON_SHOOT_INTERVAL;
+    private static final ForgeConfigSpec.DoubleValue SPECIAL_SKELETON_ARROW_SPEED;
+    private static final ForgeConfigSpec.DoubleValue SPECIAL_SKELETON_ARROW_SPREAD;
+
     static {
         ForgeConfigSpec.Builder builder = new ForgeConfigSpec.Builder();
 
@@ -287,6 +347,15 @@ public final class CrashSuperProConfig {
         CREEPER_OPEN_DOORS = builder
                 .comment("Creepers can open wooden doors while hunting, as in the original mod.")
                 .define("open_doors", true);
+        CREEPER_MOUNT_RECALC_INTERVAL = builder
+                .comment("Ticks between two path recalculation steps while looking for a spider.")
+                .defineInRange("mount_recalc_interval", 10, 1, 200);
+        CREEPER_MOUNT_FOLLOW_DISTANCE = builder
+                .comment("Distance in blocks the creeper keeps following a spider before giving up.")
+                .defineInRange("mount_follow_distance", 10.0D, 1.0D, 64.0D);
+        CREEPER_SEEK_SWELL_MAX = builder
+                .comment("Upper limit of the swell value the block hunting goal applies.")
+                .defineInRange("seek_swell_max", 30, 1, 100);
         builder.pop();
 
         builder.push("vindicator");
@@ -296,6 +365,169 @@ public final class CrashSuperProConfig {
         VINDICATOR_NATURAL_ONLY = builder
                 .comment("Only naturally spawned vindicators roll for the chicken.")
                 .define("natural_spawn_only", false);
+        builder.pop();
+
+        builder.push("creeper_cat_reaction");
+        CREEPER_CAT_CHARGE_ENABLED = builder
+                .comment("A creeper that comes close to a cat or an ocelot turns into a charged creeper.",
+                        "The vanilla flee behaviour is removed either way.")
+                .define("enabled", true);
+        CREEPER_CAT_CHARGE_RADIUS = builder
+                .comment("Radius in blocks that is checked for cats and ocelots.")
+                .defineInRange("radius", 6.0D, 1.0D, 32.0D);
+        CREEPER_CAT_CHECK_INTERVAL = builder
+                .comment("Ticks between two cat checks.")
+                .defineInRange("check_interval", 10, 1, 200);
+        builder.pop();
+
+        builder.push("potion_phantom");
+        POTION_PHANTOM_ENABLED = builder
+                .comment("Master switch for the potion phantom, a phantom that throws splash potions.")
+                .define("enabled", true);
+        POTION_PHANTOM_TAG = builder
+                .comment("Entity tag that turns a phantom into a potion phantom.")
+                .define("tag", "potion");
+        POTION_PHANTOM_TAG_CHANCE = builder
+                .comment("Chance that a spawned phantom gets the potion tag.")
+                .defineInRange("tag_chance", 0.15D, 0.0D, 1.0D);
+        POTION_PHANTOM_BOTTLE_COUNT = builder
+                .comment("How many splash potions are thrown at once.")
+                .defineInRange("bottle_count", 5, 1, 20);
+        POTION_PHANTOM_COOLDOWN = builder
+                .comment("Ticks between two volleys. 100 ticks are five seconds.")
+                .defineInRange("cooldown", 100, 1, 24000);
+        POTION_PHANTOM_HUNT_RANGE = builder
+                .comment("Radius in blocks that is checked for players to chase.")
+                .defineInRange("hunt_range", 16.0D, 1.0D, 256.0D);
+        POTION_PHANTOM_IDLE_TICKS = builder
+                .comment("Ticks without a player before it charges a valuable block. 100 ticks are five seconds.")
+                .defineInRange("idle_ticks_before_charge", 100, 1, 24000);
+        POTION_PHANTOM_EXPLOSION_POWER = builder
+                .comment("Explosion strength of the charge. 6.0 is a charged creeper.")
+                .defineInRange("explosion_power", 6.0D, 0.0D, 64.0D);
+        POTION_PHANTOM_TARGET_RADIUS = builder
+                .comment("Radius in blocks searched for the valuable block it charges into.")
+                .defineInRange("target_search_radius", 24, 1, 128);
+        POTION_PHANTOM_HUNT_HEIGHT = builder
+                .comment("How far above the player it flies while chasing. Kept low on purpose: 3 to 7 blocks.")
+                .defineInRange("hunt_height", 5.0D, 3.0D, 7.0D);
+        POTION_PHANTOM_THROW_SPEED = builder
+                .comment("Speed of the thrown potions towards the player.")
+                .defineInRange("throw_speed", 0.8D, 0.1D, 4.0D);
+        POTION_PHANTOM_THROW_SPREAD = builder
+                .comment("Random spread of the thrown potions, so a volley does not fly as one line.")
+                .defineInRange("throw_spread", 0.1D, 0.0D, 2.0D);
+        POTION_PHANTOM_CHASE_SPEED = builder
+                .comment("Flight speed while chasing a player.")
+                .defineInRange("chase_speed", 1.0D, 0.1D, 5.0D);
+        POTION_PHANTOM_CHARGE_SPEED = builder
+                .comment("Flight speed while charging a valuable block.")
+                .defineInRange("charge_speed", 1.4D, 0.1D, 5.0D);
+        POTION_PHANTOM_CHARGE_DISTANCE = builder
+                .comment("Distance in blocks at which the charge detonates.")
+                .defineInRange("charge_distance", 2.0D, 0.5D, 16.0D);
+        POTION_PHANTOM_SEARCH_INTERVAL = builder
+                .comment("Ticks between two valuable block searches while idle.")
+                .defineInRange("search_interval", 5, 1, 200);
+        builder.pop();
+
+        builder.push("explosive_skeleton");
+        EXPLOSIVE_SKELETON_ENABLED = builder
+                .comment("Skeletons tagged with this shoot arrows that explode on impact.")
+                .define("enabled", true);
+        EXPLOSIVE_SKELETON_TAG = builder
+                .comment("Entity tag for the exploding arrows. Mutually exclusive with the rider tag.")
+                .define("tag", "explosive");
+        EXPLOSIVE_SKELETON_SPAWN_CHANCE = builder
+                .comment("Chance that a naturally spawned skeleton gets the tag.")
+                .defineInRange("spawn_chance", 0.10D, 0.0D, 1.0D);
+        EXPLOSIVE_SKELETON_RIDER_CHANCE = builder
+                .comment("Chance that a skeleton shaped phantom rider gets the tag instead of riding plainly.")
+                .defineInRange("rider_chance", 0.05D, 0.0D, 1.0D);
+        EXPLOSIVE_SKELETON_POWER = builder
+                .comment("Explosion strength of the arrow. 3.0 is a normal creeper.")
+                .defineInRange("explosion_power", 3.0D, 0.0D, 64.0D);
+        builder.pop();
+
+        builder.push("lava_skeleton");
+        LAVA_SKELETON_ENABLED = builder
+                .comment("Skeletons tagged with this shoot arrows that leave lava behind on impact.")
+                .define("enabled", true);
+        LAVA_SKELETON_TAG = builder
+                .comment("Entity tag for the lava arrows. Mutually exclusive with the rider tag.")
+                .define("tag", "lava");
+        LAVA_SKELETON_SPAWN_CHANCE = builder
+                .comment("Chance that a naturally spawned skeleton gets the tag.")
+                .defineInRange("spawn_chance", 0.10D, 0.0D, 1.0D);
+        LAVA_SKELETON_RIDER_CHANCE = builder
+                .comment("Chance that a skeleton shaped phantom rider gets the tag instead of riding plainly.")
+                .defineInRange("rider_chance", 0.05D, 0.0D, 1.0D);
+        LAVA_SKELETON_RADIUS = builder
+                .comment("Radius of the lava patch that is placed on impact.")
+                .defineInRange("lava_radius", 1, 0, 8);
+        ARROW_IMPACT_PARTICLES = builder
+                .comment("Firework particles spawned at the impact of both special arrow types.")
+                .defineInRange("impact_particle_count", 12, 0, 128);
+        ARROW_TRAIL_PARTICLES = builder
+                .comment("Firework particles drawn behind a special arrow every tick. 0 disables the trail.")
+                .defineInRange("trail_particle_count", 1, 0, 16);
+        builder.pop();
+
+        builder.push("special_skeleton");
+        SPECIAL_SKELETON_TARGET_RANGE = builder
+                .comment("Radius in blocks checked for players, iron golems and villagers.",
+                        "Players must be neither creative nor spectators.")
+                .defineInRange("target_range", 16.0D, 1.0D, 128.0D);
+        SPECIAL_SKELETON_CHECK_INTERVAL = builder
+                .comment("Ticks between two target checks.")
+                .defineInRange("check_interval", 20, 1, 400);
+        SPECIAL_SKELETON_BLOCK_RADIUS = builder
+                .comment("Radius in blocks searched for a valuable block when nobody is around.")
+                .defineInRange("block_search_radius", 24, 1, 128);
+        SPECIAL_SKELETON_SHOOT_INTERVAL = builder
+                .comment("Ticks between two arrows fired at a valuable block.")
+                .defineInRange("shoot_interval", 40, 1, 400);
+        SPECIAL_SKELETON_ARROW_SPEED = builder
+                .comment("Arrow speed used when shooting at a block.")
+                .defineInRange("arrow_speed", 1.6D, 0.1D, 8.0D);
+        SPECIAL_SKELETON_ARROW_SPREAD = builder
+                .comment("Arrow inaccuracy used when shooting at a block.")
+                .defineInRange("arrow_spread", 2.0D, 0.0D, 20.0D);
+        builder.pop();
+
+        builder.push("enderman");
+        ENDERMAN_THEFT_ENABLED = builder
+                .comment("An idle enderman walks to a valuable block, takes it and leaves dirt behind.",
+                        "This is the same block entity lookup the creepers use.")
+                .define("theft_enabled", true);
+        ENDERMAN_THEFT_RADIUS = builder
+                .comment("Radius in blocks an enderman searches for something to take.")
+                .defineInRange("theft_search_radius", 16, 1, 128);
+        ENDERMAN_THEFT_DELAY = builder
+                .comment("Ticks after the theft before the spot turns into dirt. 60 ticks are three seconds.")
+                .defineInRange("theft_delay_ticks", 60, 1, 24000);
+        ENDERMAN_THEFT_MAX_RESISTANCE = builder
+                .comment("A block entity counts as valuable while its explosion resistance is below this.")
+                .defineInRange("theft_max_resistance", 30.0D, 0.0D, 1000.0D);
+        ENDERMAN_THEFT_REACH = builder
+                .comment("Distance in blocks at which the enderman can pick the block up.")
+                .defineInRange("theft_reach", 2.5D, 0.5D, 16.0D);
+        ENDERMAN_THEFT_SPEED = builder
+                .comment("Walking speed used on the way to the block.")
+                .defineInRange("theft_speed", 1.0D, 0.1D, 5.0D);
+        ENDERMAN_THEFT_SEARCH_INTERVAL = builder
+                .comment("Ticks between two valuable block searches, the lookup scans nine chunks.")
+                .defineInRange("theft_search_interval", 10, 1, 200);
+        ENDERMAN_THEFT_PARTICLES = builder
+                .comment("Teleport particles spawned when the carried block turns into dirt.")
+                .defineInRange("theft_particle_count", 32, 0, 256);
+        builder.pop();
+
+        builder.push("misc");
+        NO_SELF_DAMAGE = builder
+                .comment("Damage caused by this mod never hurts the one who caused it: explosion",
+                        "children, chain detonations and the potion volleys leave their owner alone.")
+                .define("no_self_damage", true);
         builder.pop();
 
         SPEC = builder.build();
@@ -530,6 +762,202 @@ public final class CrashSuperProConfig {
 
     public static boolean vindicatorNaturalOnly() {
         return read(VINDICATOR_NATURAL_ONLY, false);
+    }
+
+    public static boolean creeperCatChargeEnabled() {
+        return read(CREEPER_CAT_CHARGE_ENABLED, true);
+    }
+
+    public static double creeperCatChargeRadius() {
+        return read(CREEPER_CAT_CHARGE_RADIUS, 6.0D);
+    }
+
+    public static boolean potionPhantomEnabled() {
+        return read(POTION_PHANTOM_ENABLED, true);
+    }
+
+    public static String potionPhantomTag() {
+        return read(POTION_PHANTOM_TAG, "potion");
+    }
+
+    public static double potionPhantomTagChance() {
+        return read(POTION_PHANTOM_TAG_CHANCE, 0.15D);
+    }
+
+    public static int potionPhantomBottleCount() {
+        return read(POTION_PHANTOM_BOTTLE_COUNT, 5);
+    }
+
+    public static int potionPhantomCooldown() {
+        return read(POTION_PHANTOM_COOLDOWN, 100);
+    }
+
+    public static double potionPhantomHuntRange() {
+        return read(POTION_PHANTOM_HUNT_RANGE, 16.0D);
+    }
+
+    public static int potionPhantomIdleTicks() {
+        return read(POTION_PHANTOM_IDLE_TICKS, 100);
+    }
+
+    public static double potionPhantomExplosionPower() {
+        return read(POTION_PHANTOM_EXPLOSION_POWER, 6.0D);
+    }
+
+    public static int potionPhantomTargetRadius() {
+        return read(POTION_PHANTOM_TARGET_RADIUS, 24);
+    }
+
+    public static boolean explosiveSkeletonEnabled() {
+        return read(EXPLOSIVE_SKELETON_ENABLED, true);
+    }
+
+    public static String explosiveSkeletonTag() {
+        return read(EXPLOSIVE_SKELETON_TAG, "explosive");
+    }
+
+    public static double explosiveSkeletonSpawnChance() {
+        return read(EXPLOSIVE_SKELETON_SPAWN_CHANCE, 0.10D);
+    }
+
+    public static double explosiveSkeletonRiderChance() {
+        return read(EXPLOSIVE_SKELETON_RIDER_CHANCE, 0.05D);
+    }
+
+    public static double explosiveSkeletonPower() {
+        return read(EXPLOSIVE_SKELETON_POWER, 3.0D);
+    }
+
+    public static boolean lavaSkeletonEnabled() {
+        return read(LAVA_SKELETON_ENABLED, true);
+    }
+
+    public static String lavaSkeletonTag() {
+        return read(LAVA_SKELETON_TAG, "lava");
+    }
+
+    public static double lavaSkeletonSpawnChance() {
+        return read(LAVA_SKELETON_SPAWN_CHANCE, 0.10D);
+    }
+
+    public static double lavaSkeletonRiderChance() {
+        return read(LAVA_SKELETON_RIDER_CHANCE, 0.05D);
+    }
+
+    public static int lavaSkeletonRadius() {
+        return read(LAVA_SKELETON_RADIUS, 1);
+    }
+
+    public static boolean endermanTheftEnabled() {
+        return read(ENDERMAN_THEFT_ENABLED, true);
+    }
+
+    public static int endermanTheftRadius() {
+        return read(ENDERMAN_THEFT_RADIUS, 16);
+    }
+
+    public static int endermanTheftDelay() {
+        return read(ENDERMAN_THEFT_DELAY, 60);
+    }
+
+    public static double endermanTheftMaxResistance() {
+        return read(ENDERMAN_THEFT_MAX_RESISTANCE, 30.0D);
+    }
+
+    public static boolean noSelfDamage() {
+        return read(NO_SELF_DAMAGE, true);
+    }
+
+    public static double potionPhantomHuntHeight() {
+        return read(POTION_PHANTOM_HUNT_HEIGHT, 5.0D);
+    }
+
+    public static double potionPhantomThrowSpeed() {
+        return read(POTION_PHANTOM_THROW_SPEED, 0.8D);
+    }
+
+    public static double potionPhantomThrowSpread() {
+        return read(POTION_PHANTOM_THROW_SPREAD, 0.1D);
+    }
+
+    public static double potionPhantomChaseSpeed() {
+        return read(POTION_PHANTOM_CHASE_SPEED, 1.0D);
+    }
+
+    public static double potionPhantomChargeSpeed() {
+        return read(POTION_PHANTOM_CHARGE_SPEED, 1.4D);
+    }
+
+    public static double potionPhantomChargeDistance() {
+        return read(POTION_PHANTOM_CHARGE_DISTANCE, 2.0D);
+    }
+
+    public static int potionPhantomSearchInterval() {
+        return read(POTION_PHANTOM_SEARCH_INTERVAL, 5);
+    }
+
+    public static double endermanTheftReach() {
+        return read(ENDERMAN_THEFT_REACH, 2.5D);
+    }
+
+    public static double endermanTheftSpeed() {
+        return read(ENDERMAN_THEFT_SPEED, 1.0D);
+    }
+
+    public static int endermanTheftSearchInterval() {
+        return read(ENDERMAN_THEFT_SEARCH_INTERVAL, 10);
+    }
+
+    public static int endermanTheftParticleCount() {
+        return read(ENDERMAN_THEFT_PARTICLES, 32);
+    }
+
+    public static int creeperMountRecalcInterval() {
+        return read(CREEPER_MOUNT_RECALC_INTERVAL, 10);
+    }
+
+    public static double creeperMountFollowDistance() {
+        return read(CREEPER_MOUNT_FOLLOW_DISTANCE, 10.0D);
+    }
+
+    public static int creeperSeekSwellMax() {
+        return read(CREEPER_SEEK_SWELL_MAX, 30);
+    }
+
+    public static int creeperCatCheckInterval() {
+        return read(CREEPER_CAT_CHECK_INTERVAL, 10);
+    }
+
+    public static int arrowTrailParticleCount() {
+        return read(ARROW_TRAIL_PARTICLES, 1);
+    }
+
+    public static int arrowImpactParticleCount() {
+        return read(ARROW_IMPACT_PARTICLES, 12);
+    }
+
+    public static double specialSkeletonTargetRange() {
+        return read(SPECIAL_SKELETON_TARGET_RANGE, 16.0D);
+    }
+
+    public static int specialSkeletonCheckInterval() {
+        return read(SPECIAL_SKELETON_CHECK_INTERVAL, 20);
+    }
+
+    public static int specialSkeletonBlockRadius() {
+        return read(SPECIAL_SKELETON_BLOCK_RADIUS, 24);
+    }
+
+    public static int specialSkeletonShootInterval() {
+        return read(SPECIAL_SKELETON_SHOOT_INTERVAL, 40);
+    }
+
+    public static double specialSkeletonArrowSpeed() {
+        return read(SPECIAL_SKELETON_ARROW_SPEED, 1.6D);
+    }
+
+    public static double specialSkeletonArrowSpread() {
+        return read(SPECIAL_SKELETON_ARROW_SPREAD, 2.0D);
     }
 
     /*

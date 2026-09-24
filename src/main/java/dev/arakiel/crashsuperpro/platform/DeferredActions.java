@@ -20,7 +20,7 @@
  * The original MIT notice is reproduced in full in the NOTICE file next to this repository.
  */
 
-package dev.arakiel.crashsuperpro.util;
+package dev.arakiel.crashsuperpro.platform;
 
 import java.util.ArrayList;
 import java.util.List;

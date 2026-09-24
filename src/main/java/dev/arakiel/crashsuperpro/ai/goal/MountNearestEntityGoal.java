@@ -26,6 +26,7 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.function.Predicate;
 
+import dev.arakiel.crashsuperpro.config.CrashSuperProConfig;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.goal.Goal;
 
@@ -74,10 +75,11 @@ public class MountNearestEntityGoal<T extends Mob> extends Goal {
 
     @Override
     public boolean canContinueToUse() {
+        double follow = CrashSuperProConfig.creeperMountFollowDistance();
         return !this.rider.isVehicle()
                 && this.targetMount != null
                 && this.targetMount.isAlive()
-                && this.rider.distanceToSqr(this.targetMount) < 100.0D;
+                && this.rider.distanceToSqr(this.targetMount) < follow * follow;
     }
 
     @Override
@@ -97,7 +99,7 @@ public class MountNearestEntityGoal<T extends Mob> extends Goal {
         }
 
         if (--this.timeToRecalcPath <= 0) {
-            this.timeToRecalcPath = 10;
+            this.timeToRecalcPath = CrashSuperProConfig.creeperMountRecalcInterval();
             this.rider.getNavigation().moveTo(this.targetMount, this.speedModifier);
         }
 

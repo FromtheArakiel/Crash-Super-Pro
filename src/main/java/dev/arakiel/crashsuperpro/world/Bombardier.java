@@ -20,9 +20,10 @@
  * The original MIT notice is reproduced in full in the NOTICE file next to this repository.
  */
 
-package dev.arakiel.crashsuperpro.util;
+package dev.arakiel.crashsuperpro.world;
 
 import dev.arakiel.crashsuperpro.config.CrashSuperProConfig;
+import dev.arakiel.crashsuperpro.tags.BombTags;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.item.PrimedTnt;

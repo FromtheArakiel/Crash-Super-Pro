@@ -27,29 +27,24 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import dev.arakiel.crashsuperpro.ai.goal.BombardGoal;
-import dev.arakiel.crashsuperpro.ai.goal.PotionBombardGoal;
+import dev.arakiel.crashsuperpro.ai.goal.EndermanTheftGoal;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
-import net.minecraft.world.entity.monster.Phantom;
+import net.minecraft.world.entity.monster.EnderMan;
 import net.minecraft.world.level.Level;
 
 /**
- * Rewrites the phantom AI: chasing players gets the highest priority it can, and the bombardment
- * goal takes over only when no player is left in range.
+ * Adds the looting behaviour to the enderman. Priority 4 sits below attacking and the vanilla
+ * take/leave goals but above the random stroll, so the enderman actually gets to use it.
  */
-@Mixin(Phantom.class)
-public abstract class PhantomMixin extends Mob {
-    protected PhantomMixin(EntityType<? extends Mob> entityType, Level level) {
+@Mixin(EnderMan.class)
+public abstract class EndermanMixin extends Mob {
+    protected EndermanMixin(EntityType<? extends Mob> entityType, Level level) {
         super(entityType, level);
     }
 
     @Inject(method = "registerGoals", at = @At("HEAD"))
     private void crashsuperpro$registerGoals(CallbackInfo ci) {
-        Phantom phantom = (Phantom) (Object) this;
-        // Only the bombardment goal is added. It stays inactive unless the phantom carries a payload
-        // tag, so an ordinary phantom keeps the vanilla AI untouched.
-        this.goalSelector.addGoal(0, new BombardGoal(phantom));
-        this.goalSelector.addGoal(0, new PotionBombardGoal(phantom));
+        this.goalSelector.addGoal(4, new EndermanTheftGoal((EnderMan) (Object) this));
     }
 }
