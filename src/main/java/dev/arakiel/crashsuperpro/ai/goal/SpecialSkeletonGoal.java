@@ -47,7 +47,8 @@ public class SpecialSkeletonGoal extends Goal {
 
     public SpecialSkeletonGoal(Mob skeleton) {
         this.skeleton = skeleton;
-        this.setFlags(EnumSet.of(Flag.LOOK));
+        // No flags at all: the vanilla bow goal keeps full control, this goal only adds shots.
+        this.setFlags(EnumSet.noneOf(Flag.class));
     }
 
     @Override
@@ -78,9 +79,7 @@ public class SpecialSkeletonGoal extends Goal {
 
     @Override
     public boolean canContinueToUse() {
-        return isSpecial() && this.blockTarget != null
-                && TargetFinder.findHuntTarget(this.skeleton,
-                        CrashSuperProConfig.specialSkeletonTargetRange()) == null;
+        return isSpecial() && this.blockTarget != null;
     }
 
     @Override
@@ -92,6 +91,13 @@ public class SpecialSkeletonGoal extends Goal {
     public void tick() {
         BlockPos target = this.blockTarget;
         if (target == null) {
+            return;
+        }
+
+        // Somebody worth hunting showed up again, hand it back to the normal skeleton AI.
+        if (TargetFinder.findHuntTarget(this.skeleton,
+                CrashSuperProConfig.specialSkeletonTargetRange()) != null) {
+            this.blockTarget = null;
             return;
         }
 

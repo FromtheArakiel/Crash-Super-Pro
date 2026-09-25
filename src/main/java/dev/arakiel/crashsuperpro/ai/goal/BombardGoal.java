@@ -45,15 +45,19 @@ import net.minecraft.world.entity.monster.Phantom;
  * <p>A phantom without a payload tag never activates this goal, so it keeps the vanilla AI.
  */
 public class BombardGoal extends Goal {
+    private static final int TARGET_CHECK_INTERVAL = 10;
+
     private final Phantom phantom;
     private int cooldown;
+    private int checkCooldown;
     private int huntTimer;
     private LivingEntity prey;
     private BlockPos target;
 
     public BombardGoal(Phantom phantom) {
         this.phantom = phantom;
-        this.setFlags(EnumSet.of(Flag.MOVE, Flag.LOOK));
+        // Only LOOK: taking MOVE would lock out the vanilla phantom goals and freeze it in place.
+        this.setFlags(EnumSet.of(Flag.LOOK));
     }
 
     @Override
@@ -70,10 +74,17 @@ public class BombardGoal extends Goal {
             return false;
         }
 
-        // Stage one: hunt someone worth chasing.
+        // Stage one: hunt someone worth chasing. The lookup is throttled, it is an area query.
+        if (--this.checkCooldown > 0) {
+            return false;
+        }
+        this.checkCooldown = TARGET_CHECK_INTERVAL;
+
         this.prey = TargetFinder.findHuntTarget(this.phantom, CrashSuperProConfig.bombardmentHuntRange());
         if (this.prey != null) {
             this.huntTimer = CrashSuperProConfig.bombardmentHuntDropInterval();
+            // Hand the target to the vanilla attack goal, that is what actually flies and dives.
+            this.phantom.setTarget(this.prey);
             return true;
         }
 

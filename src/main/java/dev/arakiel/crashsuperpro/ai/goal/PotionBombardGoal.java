@@ -54,7 +54,8 @@ public class PotionBombardGoal extends Goal {
 
     public PotionBombardGoal(Phantom phantom) {
         this.phantom = phantom;
-        this.setFlags(EnumSet.of(Flag.MOVE, Flag.LOOK));
+        // Only LOOK: taking MOVE would lock out the vanilla phantom goals and freeze it in place.
+        this.setFlags(EnumSet.of(Flag.LOOK));
     }
 
     @Override
@@ -108,6 +109,9 @@ public class PotionBombardGoal extends Goal {
                 player.getY() + CrashSuperProConfig.potionPhantomHuntHeight(), player.getZ(),
                 CrashSuperProConfig.potionPhantomChaseSpeed());
         this.phantom.getLookControl().setLookAt(player, 30.0F, 30.0F);
+        if (this.phantom.getTarget() == null) {
+            this.phantom.setTarget(player);
+        }
 
         if (--this.cooldown <= 0) {
             this.cooldown = CrashSuperProConfig.potionPhantomCooldown();
